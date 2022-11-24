@@ -1,0 +1,249 @@
+---
+title: ' STATISTICAL ANALYSIS FOR DATA SCIENCE (C7081) ASSESSMENT'
+author: "JABEN PETER DARINYAN BAKO (213221)" 
+date: "2022-11-07"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+Github Link: [https://github.com/Jabendah/C7081]
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**BACKGROUND**
+
+Company sales is a dataset comprising two hundred (200) company (Observations) with four (4) different variables showing cost incured on advertisement. These variables include cost on Television, Radio, Newspaper, and Sales for 200 different companies.
+Often times companies produce products with sole aim to sale them to consumers but, the big task faced by these companies is getting these products or services to the knowledge of the general public and this is where various options of mode of advertisement come into play. Advertisement serves as a major tool in creating product awareness. It also conditions the mind of a potential consumer to take eventual purchase decision (Agbeja _etal,_ 2015).
+
+
+## Objectives
+Since the dataset shows cost incurred on the different forms of advertisement, this work is aimed at the following objectives;
+
+i.    identifying the most efficient form of advertisement;
+ii.   analyse the relationship between cost of advertisement and sales and;
+iii.  predict Sales
+
+## Hypothesis statement
+
+The Null hypothesis of this study is;
+
+H~0~:   There's no significant relationship between the cost of advertisement and             Sales 
+
+**METHODS**
+
+The company sales dataset is a dataset downloaded from kaggle  [https://www.kaggle.com/datasets/ishaanthareja007/company-sales]. The methods or tools used to analyse this dataset outlined objectives include;
+
+i.    Exploratory Data Analysis
+ii.   Regression Analysis (Simple Linear and Multiple Regression )
+III.  Decision Tree
+
+The simple linear regression model is used to predict a quantitative response Y on the basis of a single predictor variable X. While, Multiple regression measures the response Y on two or more variable of X. Mathematically, it can be written as thus;
+
+Y = B~0~+B~1~X    Simple Linear Regression.
+
+Y = B~0~+B~1~X~1~+B~2~X~2~+....+B~n~X~n~     Multiple Regression.
+
+where;
+Y = Sales
+X = Variables (Tv, radio and Newspaper)
+B~0~ = Intercept and;
+B~1~ = Regression Coefficients of various Variables
+
+The Linear model helps in determining the relationship between variables and it's predictive function is one big reason why it was chosen for this set of data.
+
+The Decision tree is widely used because of it flowchart that shows a clear pathway to a decision and the predictive function too. 
+
+Results would also be displayed in charts and graphs/ plots (Histogram)
+
+**RESULTS**
+
+
+## Regression Analysis
+
+```{r}
+library(readxl)
+company <- read_excel("C:\\Users\\hp\\Desktop\\My R\\company.xlsx")
+head(company)
+summary(company)
+```
+
+According to the data summary, TV advertisement seem to cost more yet, more efficient.
+
+
+Run a simple linear regression analysis to see the effect Television advertisement has on Sales.
+
+```{r}
+lm.fit <- lm(Sales ~ TV, data = company)
+summary(lm.fit)
+cor(company$Sales, company$TV)
+```
+
+From the above summary, we can say the Dist = 6.97 + 0.06*TV, the R^2^ of 0.8 1 and adjusted R^2^ of 81% explains the variance in the data. Degree of Freedom = 1,198. It indicates also that, for every unit increase in TV advert, there's a 60 unit increase in sales.
+The correlation 0.90 signifies a strong relationship between TV advert and Sales Ultimately for the companies.
+
+#Decision: reject H~0~ and conclude that there's is significant relationship between the cost of advertisement and Sales. 
+
+### Predict Sales as response from TV
+
+```{r}
+predict(lm.fit, data.frame(TV = ( c(5, 10, 15) )),
+        interval = "confidence")
+
+predict(lm.fit, data.frame(TV = ( c(5, 10, 15) )),
+        interval = "prediction")
+```
+
+The 95% confidence interval associated with TV value of 10 is (6.93, 8.13) and, the 95% prediction interval associated with TV value of 10 is (2.96, 12.1) for every 1 increase in Sales.
+
+### plot
+
+```{r}
+plot(y = company$Sales, x = company$TV,
+     ylab = "Sales", xlab = "TV",
+     main = "My Company Regression Plot",
+     pch = 20, col = "blue", cex = 1)
+abline(lm.fit, lwd = 3, col = "red",
+       text(x = 3,
+            y = 11,
+            labels = "y = 6.98 + (0.56)"), )
+```
+
+There is linearity in sales response to TV.
+
+```{r}
+hist(residuals(lm.fit),
+     xlim = c(-7, 7), ylim = c(0,.25),
+     main = "",
+     prob = T)
+lines(
+  density(residuals(lm.fit)),
+  col = "green3", lty = 1, lwd = 3)
+x <- seq(-1, +1, by=0.02)
+curve(dnorm(x, mean = mean(residuals(lm.fit)),
+            sd = sd(residuals(lm.fit))),
+      add = T,
+      col = "blue", lty = 3, lwd = 3)
+abline(v = 0, 
+       Freq = F,
+       col = "red", lty = 2, lwd = 3)
+```
+
+
+Near the mean, our residual density dropped and raised. The distribution is mostly symmetrical around the mean.
+Between -2.4 and -4.5 and  also between 2 and 3, our residual density is lower than the expected under theoretical Gaussian.
+
+*Diagnostic Plot
+
+```{r}
+par(mfrow = c(1, 3))
+plot(predict(lm.fit), residuals(lm.fit))
+plot(predict(lm.fit), rstudent(lm.fit))
+plot(residuals(lm.fit), residuals(lm.fit))
+
+par(mfrow = c(1, 1))
+```
+
+```{r}
+
+plot(hatvalues(lm.fit))
+
+which.max(hatvalues(lm.fit))
+
+```
+
+
+## Multiple Regression
+
+```{r}
+lm.fit1 <- lm(Sales ~ TV + Radio + Newspaper, data = company)
+summary(lm.fit1)
+par(mfrow = c(2, 2))
+plot(lm.fit1)
+```
+
+### Prediction
+
+```{r}
+intercept <- coef(summary(lm.fit1))["(Intercept)", "Estimate"]
+TV <- coef(summary(lm.fit1))["TV", "Estimate"]
+Radio <- coef(summary(lm.fit1))["Radio", "Estimate"]
+Newspaper <- coef(summary(lm.fit1))["Newspaper", "Estimate"]
+intercept + TV*0.054 + Radio*0.107 + Newspaper*0.000
+```
+
+The model predicts that the companies would have a Sales of 4.639513.
+
+### Summary
+1.  Based on the Coefficient estimate, It shows a 4.6 increase in cost to make sales
+2. For every 1 increase in cost, the sales up by 0.05 for TV, 0.11 for Radio.
+3. TV and Radio are statistically significant but the Newspaper isn't according to the P-value
+4. The t-value which measures our standard deviations estimates from 0 shows both TV & Radio to be relevant to sales.
+5. The R-squared of 0.09026 (90%) of the observed response explained the variance in the variable.
+6. A Sales of 4.639513 is predicted for the companies
+7. Reject H~0~ and conclude that there's is significant relationship between the cost of advertisement and Sales. 
+
+## Decision Tree
+
+```{r}
+library(tree)
+attach(company)
+High <- factor(ifelse(Sales <= 8, "No", "Yes"))
+company <- data.frame(company, High)
+tree.company <- tree(High ~ . -Sales, company)
+summary(tree.company)
+```
+
+The tree summary has five (5) terminal nodes with a misclassification rate of 0.005 and a Residual mean = 0.03.
+
+```{r}
+tree.company
+par(mfrow = c(1, 1))
+plot(tree.company)
+text(tree.company, pretty = 0, cex = .6)
+```
+
+From the above tree, the most important indicator of Sales is TV and stands as the parent nodes.
+
+### Prediction
+
+```{r}
+set.seed(2)
+train <- sample(1:nrow(company), 100)
+company.test <- company[-train, ]
+High.test <- High[-train]
+tree.company <- tree(High ~ . -Sales, company, subset = train)
+tree.pred <- predict(tree.company, company.test, type = "class")
+table(tree.pred, High.test)
+```
+
+### % correct
+```{r}
+(5 + 94) / 100
+```
+
+#### Interpretation
+The predication leads to 99% of the test.
+
+Television is the root node of the tree and as represented on the tree table to be the most important and result yielding form of advertisement. This can be viewed practically as people spend more time watching TV as compared to listening to radio or reading newspaper. 
+
+**CONCLUSION**
+
+The assessment used a dataset containing 200 observations and 4 variables with sole aim to identifying the most efficient form of advertisement; analysing the relationship between cost of advertisement and sales and; predict Sales. The best tool that best explains the observation is the regression model which showed that Television is the best mode of advertisement with positive statistical significance. we also reject the Null hypothesis and conclude that there's a significant relationship between advertisement and sales. 
+Also based on our analysis, using the prediction function in Regression and Decision Tree, we can comfortably conclude that in every increase in unit of cost in advertisement, there's a complementary increase in sales.
+
+
+
+**LITERATURE CITED**
+
+Agbeja,O., Adelakun, O.J., & Akinyemi, D.(2015). *Analysis of the effect of advertising on Sales and Profitability of company.* International Journal of Novel Research in Marketing Management and Economics.
+
+Ed Harris, (2022). *C7081 Statistical Analysis for Data Science* [http://c7081-2022.github.io/website]
+
+James _et al._ (2021). *Introduction to statistical learning.* 2nd edition
+
+Ott, R.L, Michael.L (2001), *An introduction to statistical methods and data analysis.* 5th ed. Texas A&M University.
+
